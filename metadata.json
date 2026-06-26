@@ -1,0 +1,10 @@
+{
+  "name": "Barbariq",
+  "description": "Premium luxury Kenyan barbershop featuring bespoke grooming services, elite master barbers, and an interactive AI Hairstyle and Beard Recommender.",
+  "requestFramePermissions": [
+    "camera"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
