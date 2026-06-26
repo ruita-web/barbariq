@@ -57,6 +57,10 @@ export default function AdminPortal({ services, onUpdateServices, onNavigateHome
   const [editDescription, setEditDescription] = useState('');
   const [editName, setEditName] = useState('');
 
+  // New service form
+  const [showNewService, setShowNewService] = useState(false);
+  const [newService, setNewService] = useState({ name: '', price: 0, duration: 30, description: '', category: 'cuts' as ServiceItem['category'], popular: false });
+
   // Blog management state
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
   const [editingBlog, setEditingBlog] = useState<BlogPost | null>(null);
@@ -173,6 +177,11 @@ export default function AdminPortal({ services, onUpdateServices, onNavigateHome
     loadFaqs();
   }, []);
 
+  // Reload bookings when navigating to bookings tab
+  useEffect(() => {
+    if (activeSubTab === 'bookings') loadBookings();
+  }, [activeSubTab]);
+
   const loadBookings = () => {
     const list = localStorage.getItem('barbariq_bookings');
     if (list) {
@@ -232,6 +241,31 @@ export default function AdminPortal({ services, onUpdateServices, onNavigateHome
     setEditDuration(srv.durationMinutes);
     setEditDescription(srv.description);
     setEditName(srv.name);
+  };
+
+  // Add a new service
+  const handleAddService = () => {
+    if (!newService.name.trim()) { alert('Service name is required.'); return; }
+    const newSrv: ServiceItem = {
+      id: 's' + Date.now(),
+      name: newService.name.trim(),
+      price: newService.price,
+      durationMinutes: newService.duration,
+      description: newService.description.trim(),
+      category: newService.category,
+      popular: newService.popular
+    };
+    onUpdateServices([...services, newSrv]);
+    setNewService({ name: '', price: 0, duration: 30, description: '', category: 'cuts', popular: false });
+    setShowNewService(false);
+  };
+
+  // Delete a service
+  const handleDeleteService = (id: string) => {
+    const srv = services.find(s => s.id === id);
+    if (!srv) return;
+    if (!window.confirm(`Delete "${srv.name}"? This cannot be undone.`)) return;
+    onUpdateServices(services.filter(s => s.id !== id));
   };
 
   // Save service edits
@@ -723,16 +757,25 @@ export default function AdminPortal({ services, onUpdateServices, onNavigateHome
                       <p className="text-xs text-zinc-400">Search, review notes, and manage active scheduling entries.</p>
                     </div>
 
-                    {/* Search Bar */}
-                    <div className="relative max-w-xs w-full">
-                      <Search className="absolute left-3 top-2.5 w-4 h-4 text-zinc-550" />
-                      <input 
-                        type="text" 
-                        placeholder="Search guest, barber, id..."
-                        value={searchQuery}
-                        onChange={e => setSearchQuery(e.target.value)}
-                        className="w-full bg-zinc-950 border border-zinc-800 hover:border-zinc-700 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 text-xs text-white pl-9 pr-4 py-2.5 rounded-lg outline-none font-mono"
-                      />
+                    {/* Search + Refresh */}
+                    <div className="flex items-center gap-2 max-w-xs w-full">
+                      <div className="relative flex-1">
+                        <Search className="absolute left-3 top-2.5 w-4 h-4 text-zinc-550" />
+                        <input 
+                          type="text" 
+                          placeholder="Search guest, barber, id..."
+                          value={searchQuery}
+                          onChange={e => setSearchQuery(e.target.value)}
+                          className="w-full bg-zinc-950 border border-zinc-800 hover:border-zinc-700 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 text-xs text-white pl-9 pr-4 py-2.5 rounded-lg outline-none font-mono"
+                        />
+                      </div>
+                      <button
+                        onClick={loadBookings}
+                        className="p-2.5 rounded-lg bg-zinc-950 border border-zinc-800 hover:border-zinc-700 text-zinc-500 hover:text-amber-400 transition-all"
+                        title="Refresh bookings"
+                      >
+                        <RefreshCw className="w-4 h-4" />
+                      </button>
                     </div>
                   </div>
 
@@ -806,6 +849,102 @@ export default function AdminPortal({ services, onUpdateServices, onNavigateHome
                     <h2 className="text-xl font-display font-medium text-white">Grooming Catalog Configuration</h2>
                     <p className="text-xs text-zinc-400">Modify service names, prices, durations, and descriptions. Price updates propagate reactively.</p>
                   </div>
+
+                  {/* Add Service controls */}
+                  <div className="flex justify-end">
+                    <button
+                      onClick={() => setShowNewService(!showNewService)}
+                      className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-black text-xs font-display font-bold rounded-lg transition-all flex items-center gap-1.5"
+                    >
+                      <Plus className="w-3.5 h-3.5" /> {showNewService ? 'Cancel' : 'Add Service'}
+                    </button>
+                  </div>
+
+                  {/* New service form */}
+                  {showNewService && (
+                    <div className="bg-zinc-900 border border-amber-500/30 rounded-xl p-6 space-y-4">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-sm font-display font-bold text-white">New Service</h3>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-mono text-zinc-500 block">Service Name</label>
+                          <input
+                            type="text"
+                            value={newService.name}
+                            onChange={e => setNewService({ ...newService, name: e.target.value })}
+                            className="w-full bg-zinc-950 border border-zinc-800 focus:border-amber-500 rounded p-2 text-xs text-white outline-none"
+                            placeholder="e.g. Premium Lineup & Shape"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-mono text-zinc-500 block">Category</label>
+                          <select
+                            value={newService.category}
+                            onChange={e => setNewService({ ...newService, category: e.target.value as ServiceItem['category'] })}
+                            className="w-full bg-zinc-950 border border-zinc-800 focus:border-amber-500 rounded p-2 text-xs text-white outline-none"
+                          >
+                            <option value="cuts">Cuts</option>
+                            <option value="beards">Beards</option>
+                            <option value="combos">Combos</option>
+                            <option value="treatments">Treatments</option>
+                          </select>
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-mono text-zinc-500 block">Price (KES)</label>
+                          <input
+                            type="number"
+                            value={newService.price}
+                            onChange={e => setNewService({ ...newService, price: parseInt(e.target.value) || 0 })}
+                            className="w-full bg-zinc-950 border border-zinc-800 focus:border-amber-500 rounded p-2 text-xs text-white outline-none font-mono"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-mono text-zinc-500 block">Duration (Mins)</label>
+                          <input
+                            type="number"
+                            value={newService.duration}
+                            onChange={e => setNewService({ ...newService, duration: parseInt(e.target.value) || 30 })}
+                            className="w-full bg-zinc-950 border border-zinc-800 focus:border-amber-500 rounded p-2 text-xs text-white outline-none font-mono"
+                          />
+                        </div>
+                        <div className="sm:col-span-2 space-y-1">
+                          <label className="text-[10px] font-mono text-zinc-500 block">Description</label>
+                          <textarea
+                            value={newService.description}
+                            onChange={e => setNewService({ ...newService, description: e.target.value })}
+                            rows={2}
+                            className="w-full bg-zinc-950 border border-zinc-800 focus:border-amber-500 rounded p-2 text-xs text-white outline-none leading-relaxed"
+                            placeholder="Describe the service..."
+                          />
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            id="newServicePopular"
+                            checked={newService.popular}
+                            onChange={e => setNewService({ ...newService, popular: e.target.checked })}
+                            className="rounded border-zinc-800 bg-zinc-950 accent-amber-500"
+                          />
+                          <label htmlFor="newServicePopular" className="text-[10px] font-mono text-zinc-500">Mark as Popular</label>
+                        </div>
+                      </div>
+                      <div className="flex justify-end gap-2 pt-2">
+                        <button
+                          onClick={() => setShowNewService(false)}
+                          className="px-3.5 py-2 border border-zinc-800 hover:bg-zinc-800 rounded-lg text-xs font-display text-zinc-500 hover:text-white transition-all"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          onClick={handleAddService}
+                          className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-black text-xs font-display font-bold rounded-lg transition-all flex items-center gap-1"
+                        >
+                          <Plus className="w-3.5 h-3.5" /> Add Service
+                        </button>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Grid lists of services */}
                   <div className="space-y-4">
@@ -927,12 +1066,21 @@ export default function AdminPortal({ services, onUpdateServices, onNavigateHome
                                 </button>
                               </div>
                             ) : (
-                              <button
-                                onClick={() => handleStartEdit(srv)}
-                                className="px-4 py-2 border border-zinc-800 hover:border-zinc-700 bg-zinc-950 hover:bg-zinc-900 text-zinc-400 hover:text-white text-xs font-display rounded-lg transition-all flex items-center gap-1.5"
-                              >
-                                <Edit3 className="w-3.5 h-3.5 text-amber-500" /> Edit Service
-                              </button>
+                              <div className="flex gap-2">
+                                <button
+                                  onClick={() => handleDeleteService(srv.id)}
+                                  className="px-3 py-2 border border-zinc-800 hover:border-red-500/30 bg-zinc-950 hover:bg-red-500/5 text-zinc-500 hover:text-red-400 text-xs font-display rounded-lg transition-all flex items-center gap-1.5"
+                                  title="Delete service"
+                                >
+                                  <Trash2 className="w-3 h-3" />
+                                </button>
+                                <button
+                                  onClick={() => handleStartEdit(srv)}
+                                  className="px-4 py-2 border border-zinc-800 hover:border-zinc-700 bg-zinc-950 hover:bg-zinc-900 text-zinc-400 hover:text-white text-xs font-display rounded-lg transition-all flex items-center gap-1.5"
+                                >
+                                  <Edit3 className="w-3.5 h-3.5 text-amber-500" /> Edit Service
+                                </button>
+                              </div>
                             )}
                           </div>
                         </div>
