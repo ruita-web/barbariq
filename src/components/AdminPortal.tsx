@@ -183,14 +183,36 @@ export default function AdminPortal({ services, onUpdateServices, onNavigateHome
   }, [activeSubTab]);
 
   const loadBookings = () => {
-    const list = localStorage.getItem('barbariq_bookings');
-    if (list) {
-      try {
-        setBookings(JSON.parse(list));
-      } catch (e) {
-        console.error(e);
-      }
-    }
+    // First, fetch from server (cross-device sync)
+    fetch('/api/bookings')
+      .then(res => res.json())
+      .then(serverBookings => {
+        // Merge with local — server takes precedence, then append any local-only ones
+        const local = localStorage.getItem('barbariq_bookings');
+        let merged = serverBookings;
+        if (local) {
+          try {
+            const parsed = JSON.parse(local);
+            const serverIds = new Set(serverBookings.map((b: any) => b.id));
+            const localOnly = parsed.filter((b: any) => !serverIds.has(b.id));
+            merged = [...serverBookings, ...localOnly];
+          } catch (_) {}
+        }
+        // Sync merged back to localStorage
+        localStorage.setItem('barbariq_bookings', JSON.stringify(merged));
+        setBookings(merged);
+      })
+      .catch(() => {
+        // Fallback to localStorage if server unavailable
+        const list = localStorage.getItem('barbariq_bookings');
+        if (list) {
+          try {
+            setBookings(JSON.parse(list));
+          } catch (e) {
+            console.error(e);
+          }
+        }
+      });
   };
 
   // Cyberpunk Keypad input
@@ -231,6 +253,8 @@ export default function AdminPortal({ services, onUpdateServices, onNavigateHome
       const updated = bookings.filter(b => b.id !== id);
       setBookings(updated);
       localStorage.setItem('barbariq_bookings', JSON.stringify(updated));
+      // Sync delete to server
+      fetch(`/api/bookings/${id}`, { method: 'DELETE' }).catch(() => {});
     }
   };
 
