@@ -286,8 +286,8 @@ export default function GalleryAndWall() {
                       </div>
                     ) : (
                       <div className="space-y-3 text-zinc-400">
-                        <div className="w-12 h-12 bg-zinc-900 rounded-full border border-zinc-800 flex items-center justify-center mx-auto text-zinc-400">
-                          <Upload className="w-5 h-5" />
+                        <div className="w-10 h-10 md:w-12 md:h-12 bg-zinc-900 rounded-full border border-zinc-800 flex items-center justify-center mx-auto text-zinc-400">
+                          <Upload className="w-4 h-4 md:w-5 md:h-5" />
                         </div>
                         <div className="space-y-1">
                           <p className="text-sm font-medium text-white">Drag & Drop Your Hair Photo Here</p>

@@ -328,14 +328,14 @@ export default function App() {
       <div className="noise-overlay" />
       
       {/* LUXURY DESKTOP & MOBILE HEADER */}
-      <header className="sticky top-0 z-50 bg-zinc-950/80 backdrop-blur-md border-b border-zinc-900/80 px-4 md:px-8 py-4">
+        <header className="sticky top-0 z-50 bg-zinc-950/80 backdrop-blur-md border-b border-zinc-900/80 px-3 md:px-8 py-3 md:py-4">
 
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-2 md:gap-4">
           <button
             onClick={() => { setActiveTab('lounge'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-            className="flex items-center gap-1.5 hover:opacity-80 transition-all"
+            className="flex items-center gap-1.5 hover:opacity-80 transition-all shrink-0"
           >
-            <div className="w-12 h-12 rounded-lg overflow-hidden shrink-0">
+            <div className="w-8 h-8 md:w-12 md:h-12 rounded-lg overflow-hidden shrink-0">
               <img src={logoImg} alt="BARBARIQ" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
             </div>
             <div className="text-left">
@@ -404,7 +404,7 @@ export default function App() {
           </nav>
 
           {/* Quick Contact & Audio Toggle Accent */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 md:gap-4 shrink-0">
             {/* Tactile Stylist Soundbox Button */}
             <button
               onClick={() => {
@@ -430,7 +430,7 @@ export default function App() {
                   }, 50);
                 }
               }}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-[10px] font-mono uppercase tracking-wider transition-all active:scale-95 ${
+              className={`flex items-center gap-1 md:gap-1.5 px-2 md:px-3 py-1.5 rounded-full border text-[10px] font-mono uppercase tracking-wider transition-all active:scale-95 ${
                 soundEnabled 
                   ? 'bg-amber-500/10 border-amber-500 text-amber-400' 
                   : 'bg-zinc-900 border-zinc-850 text-zinc-500 hover:text-zinc-400'
@@ -438,7 +438,7 @@ export default function App() {
               title="Enable sensory tools sounds (scissors, clippers)"
             >
               <Volume2 className={`w-3.5 h-3.5 ${soundEnabled ? 'text-amber-400' : 'text-zinc-500'}`} />
-              <span>{soundEnabled ? 'Sensory On' : 'Sensory Off'}</span>
+              <span className="hidden sm:inline">{soundEnabled ? 'Sensory On' : 'Sensory Off'}</span>
             </button>
 
             <div className="hidden lg:block text-right">
@@ -451,19 +451,19 @@ export default function App() {
             <button
               onClick={() => handleTabChange('book')}
               onMouseEnter={() => triggerAudio('click')}
-              className="px-4 py-2 rounded-full bg-amber-500 text-black font-display font-bold text-xs uppercase tracking-wider hover:bg-amber-400 transition-all active:scale-95 shadow-md shadow-amber-500/10"
+              className="px-3 md:px-4 py-2 rounded-full bg-amber-500 text-black font-display font-bold text-[10px] md:text-xs uppercase tracking-wider hover:bg-amber-400 transition-all active:scale-95 shadow-md shadow-amber-500/10"
             >
-              Reserve Chair
+              <span className="hidden sm:inline">Reserve </span>Chair
             </button>
           </div>
         </div>
       </header>
 
       {/* MOBILE FLOATING BOTTOM BAR */}
-      <div className="md:hidden fixed bottom-4 left-4 right-4 z-40 bg-zinc-950/90 backdrop-blur-md border border-zinc-800 p-2 rounded-full flex justify-between shadow-2xl">
+      <div className="md:hidden fixed bottom-4 left-4 right-4 z-40 bg-zinc-950/90 backdrop-blur-md border border-zinc-800 p-2 rounded-full flex justify-between gap-1 shadow-2xl overflow-x-auto snap-x snap-mandatory scrollbar-none">
         <button
           onClick={() => handleTabChange('lounge')}
-          className={`flex-1 py-2 text-center rounded-full text-[10px] font-display font-semibold uppercase tracking-wider transition-all ${
+          className={`flex-1 min-w-0 shrink-0 snap-center py-2.5 text-center rounded-full text-[10px] font-display font-semibold uppercase tracking-wider transition-all ${
             activeTab === 'lounge' ? 'bg-amber-500 text-black font-bold' : 'text-zinc-400'
           }`}
         >
@@ -471,7 +471,7 @@ export default function App() {
         </button>
         <button
           onClick={() => handleTabChange('book')}
-          className={`flex-1 py-2 text-center rounded-full text-[10px] font-display font-semibold uppercase tracking-wider transition-all ${
+          className={`flex-1 min-w-0 shrink-0 snap-center py-2.5 text-center rounded-full text-[10px] font-display font-semibold uppercase tracking-wider transition-all ${
             activeTab === 'book' ? 'bg-amber-500 text-black font-bold' : 'text-zinc-400'
           }`}
         >
@@ -479,7 +479,7 @@ export default function App() {
         </button>
         <button
           onClick={() => handleTabChange('faq')}
-          className={`flex-1 py-2 text-center rounded-full text-[10px] font-display font-semibold uppercase tracking-wider transition-all ${
+          className={`flex-1 min-w-0 shrink-0 snap-center py-2.5 text-center rounded-full text-[10px] font-display font-semibold uppercase tracking-wider transition-all ${
             activeTab === 'faq' ? 'bg-amber-500 text-black font-bold' : 'text-zinc-400'
           }`}
         >
@@ -487,7 +487,7 @@ export default function App() {
         </button>
         <button
           onClick={() => handleTabChange('blog')}
-          className={`flex-1 py-2 text-center rounded-full text-[10px] font-display font-semibold uppercase tracking-wider transition-all ${
+          className={`flex-1 min-w-0 shrink-0 snap-center py-2.5 text-center rounded-full text-[10px] font-display font-semibold uppercase tracking-wider transition-all ${
             activeTab === 'blog' ? 'bg-amber-500 text-black font-bold' : 'text-zinc-400'
           }`}
         >
@@ -495,11 +495,11 @@ export default function App() {
         </button>
         <button
           onClick={() => handleTabChange('wall')}
-          className={`flex-1 py-2 text-center rounded-full text-[10px] font-display font-semibold uppercase tracking-wider transition-all ${
+          className={`flex-1 min-w-0 shrink-0 snap-center py-2.5 text-center rounded-full text-[10px] font-display font-semibold uppercase tracking-wider transition-all ${
             activeTab === 'wall' ? 'bg-amber-500 text-black font-bold' : 'text-zinc-400'
           }`}
         >
-          Wall
+          Freshness
         </button>
       </div>
 
@@ -570,7 +570,7 @@ export default function App() {
       </section>
 
       {/* CORE DYNAMIC CONTENT REGION */}
-      <main className="flex-grow max-w-7xl w-full mx-auto px-4 md:px-8 py-10 md:py-16">
+      <main className="flex-grow max-w-7xl w-full mx-auto px-4 md:px-8 py-6 md:py-16">
         <AnimatePresence mode="wait">
           
           {/* THE LOUNGE (LANDING PAGE VIEW) */}
@@ -599,8 +599,8 @@ export default function App() {
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
                     <div className="flex gap-3 items-start">
-                      <div className="w-8 h-8 rounded bg-zinc-900 border border-zinc-800 text-amber-500 flex items-center justify-center shrink-0">
-                        <Coffee className="w-4 h-4" />
+                      <div className="w-7 h-7 md:w-8 md:h-8 rounded bg-zinc-900 border border-zinc-800 text-amber-500 flex items-center justify-center shrink-0">
+                        <Coffee className="w-3.5 h-3.5 md:w-4 md:h-4" />
                       </div>
                       <div>
                         <h4 className="font-display font-bold text-white text-xs md:text-sm">Single Origin Espresso</h4>
@@ -609,8 +609,8 @@ export default function App() {
                     </div>
 
                     <div className="flex gap-3 items-start">
-                      <div className="w-8 h-8 rounded bg-zinc-900 border border-zinc-800 text-amber-500 flex items-center justify-center shrink-0">
-                        <Music className="w-4 h-4" />
+                      <div className="w-7 h-7 md:w-8 md:h-8 rounded bg-zinc-900 border border-zinc-800 text-amber-500 flex items-center justify-center shrink-0">
+                        <Music className="w-3.5 h-3.5 md:w-4 md:h-4" />
                       </div>
                       <div>
                         <h4 className="font-display font-bold text-white text-xs md:text-sm">Premium Audio Experience</h4>
@@ -619,8 +619,8 @@ export default function App() {
                     </div>
 
                     <div className="flex gap-3 items-start">
-                      <div className="w-8 h-8 rounded bg-zinc-900 border border-zinc-800 text-amber-500 flex items-center justify-center shrink-0">
-                        <Wind className="w-4 h-4" />
+                      <div className="w-7 h-7 md:w-8 md:h-8 rounded bg-zinc-900 border border-zinc-800 text-amber-500 flex items-center justify-center shrink-0">
+                        <Wind className="w-3.5 h-3.5 md:w-4 md:h-4" />
                       </div>
                       <div>
                         <h4 className="font-display font-bold text-white text-xs md:text-sm">Aroma Hot Towels</h4>
@@ -629,8 +629,8 @@ export default function App() {
                     </div>
 
                     <div className="flex gap-3 items-start">
-                      <div className="w-8 h-8 rounded bg-zinc-900 border border-zinc-800 text-amber-500 flex items-center justify-center shrink-0">
-                        <Award className="w-4 h-4" />
+                      <div className="w-7 h-7 md:w-8 md:h-8 rounded bg-zinc-900 border border-zinc-800 text-amber-500 flex items-center justify-center shrink-0">
+                        <Award className="w-3.5 h-3.5 md:w-4 md:h-4" />
                       </div>
                       <div>
                         <h4 className="font-display font-bold text-white text-xs md:text-sm">Gold Edge Products</h4>
@@ -725,24 +725,24 @@ export default function App() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5 space-y-2">
-                    <MapPin className="w-5 h-5 text-amber-500" />
-                    <h3 className="font-display font-bold text-white text-sm">Barbershop Near Juja Town</h3>
-                    <p className="text-xs text-zinc-400 leading-relaxed">
+                  <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 md:p-5 space-y-2">
+                    <MapPin className="w-4 h-4 md:w-5 md:h-5 text-amber-500" />
+                    <h3 className="font-display font-bold text-white text-xs md:text-sm">Barbershop Near Juja Town</h3>
+                    <p className="text-[10px] md:text-xs text-zinc-400 leading-relaxed">
                       Right on Thika Road, minutes from Juja town centre and JKUAT. Whether you're a student or a local resident, our lounge is your closest premium barbershop for precision fades and beard sculpts.
                     </p>
                   </div>
-                  <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5 space-y-2">
-                    <MapPin className="w-5 h-5 text-amber-500" />
-                    <h3 className="font-display font-bold text-white text-sm">Barbershop Along Thika Road</h3>
-                    <p className="text-xs text-zinc-400 leading-relaxed">
+                  <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 md:p-5 space-y-2">
+                    <MapPin className="w-4 h-4 md:w-5 md:h-5 text-amber-500" />
+                    <h3 className="font-display font-bold text-white text-xs md:text-sm">Barbershop Along Thika Road</h3>
+                    <p className="text-[10px] md:text-xs text-zinc-400 leading-relaxed">
                       Easy access from Nairobi via Thika Superhighway. Just off the Juja exit, we're the go-to barbershop along Thika Road for commuters, students, and residents looking for premium grooming without the city traffic.
                     </p>
                   </div>
-                  <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5 space-y-2">
-                    <MapPin className="w-5 h-5 text-amber-500" />
-                    <h3 className="font-display font-bold text-white text-sm">Barber Near JKUAT & KU</h3>
-                    <p className="text-xs text-zinc-400 leading-relaxed">
+                  <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 md:p-5 space-y-2">
+                    <MapPin className="w-4 h-4 md:w-5 md:h-5 text-amber-500" />
+                    <h3 className="font-display font-bold text-white text-xs md:text-sm">Barber Near JKUAT & KU</h3>
+                    <p className="text-[10px] md:text-xs text-zinc-400 leading-relaxed">
                       Serving JKUAT, Kenyatta University, and surrounding campuses. Student-friendly pricing, quick sessions between lectures, and the cleanest fades near campus — walk in or book online.
                     </p>
                   </div>
@@ -755,10 +755,10 @@ export default function App() {
                 {/* HOURS */}
                 <div className="space-y-3 lg:border-r lg:border-zinc-800 lg:pr-6">
                   <div className="flex items-center gap-2">
-                    <Clock className="w-5 h-5 text-amber-400" />
-                    <h3 className="font-display font-bold text-white text-sm uppercase tracking-wider">Operational Hours</h3>
+                    <Clock className="w-4 h-4 md:w-5 md:h-5 text-amber-400" />
+                    <h3 className="font-display font-bold text-white text-xs md:text-sm uppercase tracking-wider">Operational Hours</h3>
                   </div>
-                  <div className="space-y-1.5 text-xs md:text-sm text-zinc-300 font-mono">
+                  <div className="space-y-1.5 text-[10px] md:text-sm text-zinc-300 font-mono">
                     <p className="flex justify-between"><span className="text-zinc-500">Mon - Fri:</span> <span>08:00 AM - 08:00 PM</span></p>
                     <p className="flex justify-between"><span className="text-zinc-500">Saturday:</span> <span>08:00 AM - 08:30 PM</span></p>
                     <p className="flex justify-between"><span className="text-zinc-500">Sunday:</span> <span>09:00 AM - 07:00 PM</span></p>
@@ -768,10 +768,10 @@ export default function App() {
                 {/* ADDRESS & BRANCHES */}
                 <div className="space-y-3 lg:border-r lg:border-zinc-800 lg:px-6">
                   <div className="flex items-center gap-2">
-                    <MapPin className="w-5 h-5 text-amber-400" />
-                    <h3 className="font-display font-bold text-white text-sm uppercase tracking-wider">Our Lounges</h3>
+                    <MapPin className="w-4 h-4 md:w-5 md:h-5 text-amber-400" />
+                    <h3 className="font-display font-bold text-white text-xs md:text-sm uppercase tracking-wider">Our Lounges</h3>
                   </div>
-                  <div className="space-y-2 text-xs md:text-sm text-zinc-300">
+                  <div className="space-y-2 text-[10px] md:text-sm text-zinc-300">
                     <p>
                       <strong>Juja Lounge:</strong> Along Thika Road, Juja.
                     </p>
@@ -781,10 +781,10 @@ export default function App() {
                 {/* CONTACT & SUPPORT */}
                 <div className="space-y-3 lg:pl-6">
                   <div className="flex items-center gap-2">
-                    <Phone className="w-5 h-5 text-amber-400" />
-                    <h3 className="font-display font-bold text-white text-sm uppercase tracking-wider">Contact & Desk</h3>
+                    <Phone className="w-4 h-4 md:w-5 md:h-5 text-amber-400" />
+                    <h3 className="font-display font-bold text-white text-xs md:text-sm uppercase tracking-wider">Contact & Desk</h3>
                   </div>
-                  <div className="space-y-1 text-xs md:text-sm text-zinc-300 font-mono">
+                  <div className="space-y-1 text-[10px] md:text-sm text-zinc-300 font-mono">
                     <p className="flex justify-between">              <span className="text-zinc-500">WhatsApp:</span> <a href={`tel:${PHONE}`} className="hover:underline text-amber-400">{PHONE_DISPLAY}</a></p>
                     <p className="flex justify-between"><span className="text-zinc-500">Reception:</span> <a href={`tel:${PHONE}`} className="hover:underline">{PHONE_DISPLAY}</a></p>
                     <p className="flex justify-between"><span className="text-zinc-500">E-Mail:</span> <a href={`mailto:${EMAIL}`} className="hover:underline">{EMAIL}</a></p>

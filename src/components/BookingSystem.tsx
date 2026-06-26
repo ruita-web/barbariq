@@ -192,6 +192,15 @@ export default function BookingSystem({
       );
     } catch (_) {}
 
+    // POST to server for cross-device sync
+    try {
+      fetch('/api/bookings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newBooking)
+      });
+    } catch (_) {}
+
     // Alert sound + browser notification
     sendNotification(newBooking);
     if (onBookingSuccess) {
@@ -330,19 +339,19 @@ export default function BookingSystem({
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
       {/* LEFT 2 COLUMNS: BOOKING FLOW WIZARD */}
-      <div className="lg:col-span-2 bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden p-6 md:p-8">
+      <div className="lg:col-span-2 bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden p-4 md:p-8">
         
         {/* Step Indicator Header */}
         {step < 5 && (
-          <div className="mb-8">
-            <div className="flex justify-between items-center mb-4">
-              <span className="text-xs font-mono tracking-wider text-amber-500 uppercase">
+          <div className="mb-6 md:mb-8">
+            <div className="flex justify-between items-center mb-3">
+              <span className="text-[10px] font-mono tracking-wider text-amber-500 uppercase">
                 Step {step} of 3
               </span>
-              <h3 className="text-sm font-heading font-semibold text-zinc-400">
-                {step === 1 && "Select Bespoke Service"}
-                {step === 2 && "Select Date & Time Slot"}
-                {step === 3 && "Confirm Booking Information"}
+              <h3 className="text-[11px] md:text-sm font-heading font-semibold text-zinc-400">
+                {step === 1 && "Select Grooming Service"}
+                {step === 2 && "Select Date & Time"}
+                {step === 3 && "Confirm Details"}
               </h3>
             </div>
             
@@ -366,13 +375,13 @@ export default function BookingSystem({
               exit={{ opacity: 0, x: -20 }}
               className="space-y-6"
             >
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-4">
                 <div>
-                  <h2 className="text-2xl font-designer font-bold tracking-tight text-white mb-1 uppercase">
-                    Select Grooming Service
+                  <h2 className="text-xl md:text-2xl font-designer font-bold tracking-tight text-white mb-0.5 uppercase">
+                    Select Service
                   </h2>
-                  <p className="text-sm text-zinc-400">
-                    Choose from our high-fashion Kenyan cuts, beard sculpture, or dread lock packages.
+                  <p className="text-xs md:text-sm text-zinc-400">
+                    Choose from our grooming packages.
                   </p>
                 </div>
                 
@@ -383,7 +392,7 @@ export default function BookingSystem({
               </div>
 
               {/* Service Grid categorized with interactive motion buttons */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[440px] overflow-y-auto pr-2 scrollbar-thin">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 max-h-none md:max-h-[440px] overflow-y-auto pr-1 md:pr-2 scrollbar-thin">
                 {services.map((srv, srvIdx) => (
                   <motion.button
                     key={srv.id}
@@ -393,31 +402,31 @@ export default function BookingSystem({
                     whileHover={srv.id !== selectedService?.id ? { y: -2, borderColor: "#3f3f46" } : undefined}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => setSelectedService(srv)}
-                    className={`text-left p-4 rounded-xl border transition-all relative flex flex-col justify-between ${
+                    className={`text-left p-3 md:p-4 rounded-xl border transition-all relative flex flex-col justify-between ${
                       selectedService?.id === srv.id
                         ? 'border-amber-500 bg-amber-500/10 glow-gold'
                         : 'border-zinc-800 bg-zinc-950/40 hover:bg-zinc-900/30'
                     }`}
                   >
                     {srv.popular && (
-                      <span className="absolute top-3 right-3 text-[9px] font-mono tracking-widest bg-amber-500/15 text-amber-400 px-2 py-0.5 rounded border border-amber-500/20 uppercase">
+                      <span className="absolute top-2 md:top-3 right-2 md:right-3 text-[8px] md:text-[9px] font-mono tracking-widest bg-amber-500/15 text-amber-400 px-1.5 md:px-2 py-0.5 rounded border border-amber-500/20 uppercase">
                         Popular
                       </span>
                     )}
                     <div>
-                      <h4 className="font-heading font-semibold text-white pr-12 text-sm md:text-base">
+                      <h4 className="font-heading font-semibold text-white pr-10 text-xs md:text-sm">
                         {srv.name}
                       </h4>
-                      <p className="text-xs text-zinc-400 mt-1 lines-clamp-2 leading-relaxed">
+                      <p className="text-[10px] md:text-xs text-zinc-400 mt-1 lines-clamp-2 leading-relaxed">
                         {srv.description}
                       </p>
                     </div>
 
-                    <div className="flex items-center justify-between mt-4 pt-3 border-t border-zinc-800/60 w-full">
-                      <span className="text-zinc-500 text-xs font-mono">
+                    <div className="flex items-center justify-between mt-3 pt-2 border-t border-zinc-800/60 w-full">
+                      <span className="text-zinc-500 text-[10px] md:text-xs font-mono">
                         {srv.durationMinutes} Mins
                       </span>
-                      <span className="text-amber-400 font-mono font-medium text-sm">
+                      <span className="text-amber-400 font-mono font-medium text-xs md:text-sm">
                         KES {srv.price.toLocaleString()}
                       </span>
                     </div>
@@ -431,17 +440,17 @@ export default function BookingSystem({
                 ))}
               </div>
 
-              <div className="flex justify-end pt-4">
+              <div className="flex justify-end pt-3 md:pt-4">
                 <button
                   disabled={!selectedService}
                   onClick={() => setStep(2)}
-                  className={`flex items-center gap-2 px-6 py-3 rounded-full font-heading font-bold text-sm transition-all ${
+                  className={`flex items-center gap-2 px-5 md:px-6 py-2.5 md:py-3 rounded-full font-heading font-bold text-xs md:text-sm transition-all ${
                     selectedService
                       ? 'bg-amber-500 text-black hover:bg-amber-400 shadow-md shadow-amber-500/10'
                       : 'bg-zinc-800 text-zinc-500 cursor-not-allowed'
                   }`}
                 >
-                  Next: Book Session <ChevronRight className="w-4 h-4" />
+                  Next <ChevronRight className="w-3.5 h-3.5 md:w-4 md:h-4" />
                 </button>
               </div>
             </motion.div>
@@ -457,20 +466,20 @@ export default function BookingSystem({
               className="space-y-6"
             >
               <div>
-                <h2 className="text-2xl font-designer font-bold tracking-tight text-white mb-1 uppercase">
-                  Schedule Your Session
+                <h2 className="text-xl md:text-2xl font-designer font-bold tracking-tight text-white mb-0.5 uppercase">
+                  Schedule Session
                 </h2>
-                <p className="text-sm text-zinc-400">
-                  Select an available date and preferred time slot for your premium cut.
+                <p className="text-xs md:text-sm text-zinc-400">
+                  Pick a date and time for your visit.
                 </p>
               </div>
 
               {/* Date horizontal scroller */}
-              <div className="space-y-2">
-                <label className="text-xs font-mono text-zinc-400 uppercase tracking-widest block">
+              <div className="space-y-1.5 md:space-y-2">
+                <label className="text-[10px] md:text-xs font-mono text-zinc-400 uppercase tracking-widest block">
                   Select Date
                 </label>
-                <div className="flex gap-2 overflow-x-auto pb-2 pr-2 scrollbar-thin">
+                <div className="flex gap-2 overflow-x-auto pb-2 pr-2 scrollbar-thin -mx-1 px-1">
                   {dates.map((d, dIdx) => (
                     <motion.button
                       key={d.value}
@@ -483,19 +492,19 @@ export default function BookingSystem({
                         setSelectedDate(d.value);
                         setSelectedSlot(''); // Reset slot when date changes
                       }}
-                      className={`flex flex-col items-center justify-center p-3 rounded-lg border min-w-[70px] transition-all shrink-0 ${
+                      className={`flex flex-col items-center justify-center p-2 md:p-3 rounded-lg border min-w-[60px] md:min-w-[70px] transition-all shrink-0 ${
                         selectedDate === d.value
                           ? 'border-amber-500 bg-amber-500/20 text-white shadow-sm shadow-amber-500/10'
                           : 'border-zinc-800 bg-zinc-950/40 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200'
                       }`}
                     >
-                      <span className="text-[10px] font-mono uppercase text-zinc-500">
+                      <span className="text-[9px] md:text-[10px] font-mono uppercase text-zinc-500">
                         {d.weekday}
                       </span>
-                      <span className="text-lg font-display font-semibold mt-1">
+                      <span className="text-base md:text-lg font-display font-semibold mt-0.5">
                         {d.day}
                       </span>
-                      <span className="text-[9px] font-mono text-zinc-500 uppercase">
+                      <span className="text-[8px] md:text-[9px] font-mono text-zinc-500 uppercase">
                         {d.month}
                       </span>
                     </motion.button>
@@ -504,12 +513,12 @@ export default function BookingSystem({
               </div>
 
               {/* Time Slots grid */}
-              <div className="space-y-2">
-                <label className="text-xs font-mono text-zinc-400 uppercase tracking-widest block">
-                  Select Time Slot (Juja Lounge)
+              <div className="space-y-1.5 md:space-y-2">
+                <label className="text-[10px] md:text-xs font-mono text-zinc-400 uppercase tracking-widest block">
+                  Select Time Slot
                 </label>
                 {selectedDate ? (
-                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-1.5 md:gap-2">
                     {TIME_SLOTS.map((slot) => {
                       const isBooked = isSlotBooked(selectedDate, slot);
                       return (
@@ -519,7 +528,7 @@ export default function BookingSystem({
                           whileHover={!isBooked && selectedSlot !== slot ? { scale: 1.03 } : undefined}
                           whileTap={!isBooked ? { scale: 0.96 } : undefined}
                           onClick={() => setSelectedSlot(slot)}
-                          className={`py-2 px-1 rounded border text-xs font-mono transition-all text-center ${
+                          className={`py-2 md:py-2.5 px-1 rounded border text-[10px] md:text-xs font-mono transition-all text-center ${
                             isBooked
                               ? 'border-zinc-900 bg-zinc-950 text-zinc-700 cursor-not-allowed line-through'
                               : selectedSlot === slot
@@ -528,35 +537,35 @@ export default function BookingSystem({
                           }`}
                         >
                           {slot}
-                          {isBooked && <span className="block text-[8px] opacity-40">Booked</span>}
+                          {isBooked && <span className="block text-[7px] md:text-[8px] opacity-40">Booked</span>}
                         </motion.button>
                       );
                     })}
                   </div>
                 ) : (
-                  <div className="p-8 text-center rounded-xl bg-zinc-950/30 border border-zinc-800/60 text-zinc-500 text-sm">
-                    Please select a date from above first to view available hourly slots.
+                  <div className="p-6 md:p-8 text-center rounded-xl bg-zinc-950/30 border border-zinc-800/60 text-zinc-500 text-xs md:text-sm">
+                    Select a date first to see available slots.
                   </div>
                 )}
               </div>
 
-              <div className="flex justify-between pt-6 border-t border-zinc-800">
+              <div className="flex justify-between pt-4 md:pt-6 border-t border-zinc-800">
                 <button
                   onClick={() => setStep(1)}
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-full border border-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-800 text-sm font-display transition-all"
+                  className="flex items-center gap-2 px-3 md:px-5 py-2 md:py-2.5 rounded-full border border-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-800 text-xs md:text-sm font-display transition-all"
                 >
-                  <ChevronLeft className="w-4 h-4" /> Back to Services
+                  <ChevronLeft className="w-3.5 h-3.5 md:w-4 md:h-4" /> Back
                 </button>
                 <button
                   disabled={!selectedDate || !selectedSlot}
                   onClick={() => setStep(3)}
-                  className={`flex items-center gap-2 px-6 py-2.5 rounded-full font-display font-medium text-sm transition-all ${
+                  className={`flex items-center gap-2 px-4 md:px-6 py-2 md:py-2.5 rounded-full font-display font-medium text-xs md:text-sm transition-all ${
                     selectedDate && selectedSlot
                       ? 'bg-amber-500 text-black hover:bg-amber-400 shadow-md shadow-amber-500/10'
                       : 'bg-zinc-800 text-zinc-500 cursor-not-allowed'
                   }`}
                 >
-                  Next: Contact Details <ChevronRight className="w-4 h-4" />
+                  Next <ChevronRight className="w-3.5 h-3.5 md:w-4 md:h-4" />
                 </button>
               </div>
             </motion.div>
@@ -572,18 +581,18 @@ export default function BookingSystem({
               className="space-y-6"
             >
               <div>
-                <h2 className="text-2xl font-designer font-bold tracking-tight text-white mb-1 uppercase">
-                  Contact Information
+                <h2 className="text-xl md:text-2xl font-designer font-bold tracking-tight text-white mb-0.5 uppercase">
+                  Contact Info
                 </h2>
-                <p className="text-sm text-zinc-400">
-                  Complete your registration to lock in your luxury chair reservation.
+                <p className="text-xs md:text-sm text-zinc-400">
+                  Final step to lock in your reservation.
                 </p>
               </div>
 
-              <form onSubmit={handleBookingSubmit} className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <form onSubmit={handleBookingSubmit} className="space-y-3 md:space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
                   <div>
-                    <label className="text-xs font-mono text-zinc-400 uppercase tracking-widest block mb-1">
+                    <label className="text-[10px] md:text-xs font-mono text-zinc-400 uppercase tracking-widest block mb-1">
                       Full Name *
                     </label>
                     <input 
@@ -592,12 +601,12 @@ export default function BookingSystem({
                       placeholder="e.g. Liam Bett"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-3 text-sm text-white focus:outline-none focus:border-amber-500 transition-all"
+                      className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2.5 md:p-3 text-sm text-white focus:outline-none focus:border-amber-500 transition-all"
                     />
                   </div>
 
                   <div>
-                    <label className="text-xs font-mono text-zinc-400 uppercase tracking-widest block mb-1">
+                    <label className="text-[10px] md:text-xs font-mono text-zinc-400 uppercase tracking-widest block mb-1">
                       Phone Number *
                     </label>
                     <input 
@@ -606,43 +615,43 @@ export default function BookingSystem({
                       placeholder={`e.g. ${PHONE_DISPLAY}`}
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
-                      className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-3 text-sm text-white focus:outline-none focus:border-amber-500 transition-all"
+                      className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2.5 md:p-3 text-sm text-white focus:outline-none focus:border-amber-500 transition-all"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="text-xs font-mono text-zinc-400 uppercase tracking-widest block mb-1">
-                    Email Address (For ticket pass pdf / confirmation)
+                  <label className="text-[10px] md:text-xs font-mono text-zinc-400 uppercase tracking-widest block mb-1">
+                    Email (for receipt)
                   </label>
                   <input 
                     type="email" 
                     placeholder="e.g. liam@bett.co.ke"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-3 text-sm text-white focus:outline-none focus:border-amber-500 transition-all"
+                    className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2.5 md:p-3 text-sm text-white focus:outline-none focus:border-amber-500 transition-all"
                   />
                 </div>
 
                 <div>
-                  <label className="text-xs font-mono text-zinc-400 uppercase tracking-widest block mb-1">
-                    Special Grooming Notes or Style Desired
+                  <label className="text-[10px] md:text-xs font-mono text-zinc-400 uppercase tracking-widest block mb-1">
+                    Style Notes
                   </label>
                   <textarea 
                     rows={2}
-                    placeholder="e.g. Keep beard line extremely thin, sensitive skin alert, or buzz blonde dye style reference"
+                    placeholder="e.g. Keep beard line thin, sensitive skin, etc."
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
-                    className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-3 text-sm text-white focus:outline-none focus:border-amber-500 transition-all"
+                    className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2.5 md:p-3 text-sm text-white focus:outline-none focus:border-amber-500 transition-all"
                   />
                 </div>
 
                 {/* Summary Box */}
-                <div className="bg-zinc-950 border border-zinc-800/80 rounded-xl p-4 mt-6">
-                  <h4 className="text-xs font-mono tracking-wider text-amber-500 uppercase mb-3 border-b border-zinc-800 pb-2">
-                    RESERVATIONS SUMMARY
+                <div className="bg-zinc-950 border border-zinc-800/80 rounded-xl p-3 md:p-4 mt-4 md:mt-6">
+                  <h4 className="text-[10px] md:text-xs font-mono tracking-wider text-amber-500 uppercase mb-2 md:mb-3 border-b border-zinc-800 pb-1.5 md:pb-2">
+                    SUMMARY
                   </h4>
-                  <div className="space-y-2 text-sm text-zinc-300">
+                  <div className="space-y-1.5 md:space-y-2 text-xs md:text-sm text-zinc-300">
                     <div className="flex justify-between">
                       <span className="text-zinc-500">Service:</span>
                       <span className="font-medium text-white">{selectedService?.name}</span>
@@ -652,35 +661,35 @@ export default function BookingSystem({
                       <span className="font-medium text-white">Owner</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-zinc-500">Date & Hour:</span>
+                      <span className="text-zinc-500">Date & Time:</span>
                       <span className="font-medium text-amber-400 font-mono">{selectedDate} @ {selectedSlot}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-zinc-500">Branch Location:</span>
+                      <span className="text-zinc-500">Location:</span>
                       <span className="font-medium text-white flex items-center gap-1">
-                        <MapPin className="w-3.5 h-3.5 text-amber-500 inline" /> Along Thika Road, Juja
+                        <MapPin className="w-3 h-3 md:w-3.5 md:h-3.5 text-amber-500 inline" /> Along Thika Road, Juja
                       </span>
                     </div>
-                    <div className="flex justify-between pt-2 border-t border-zinc-800 text-base font-semibold">
-                      <span className="text-zinc-400">Total KES at Counter:</span>
+                    <div className="flex justify-between pt-1.5 md:pt-2 border-t border-zinc-800 text-sm md:text-base font-semibold">
+                      <span className="text-zinc-400">Total:</span>
                       <span className="text-amber-500 font-mono">KES {selectedService?.price.toLocaleString()}</span>
                     </div>
                   </div>
                 </div>
 
-                <div className="flex justify-between pt-6 border-t border-zinc-800">
+                <div className="flex justify-between pt-4 md:pt-6 border-t border-zinc-800">
                   <button
                     type="button"
                     onClick={() => setStep(2)}
-                    className="flex items-center gap-2 px-5 py-2.5 rounded-full border border-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-800 text-sm font-display transition-all"
+                    className="flex items-center gap-2 px-3 md:px-5 py-2 md:py-2.5 rounded-full border border-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-800 text-xs md:text-sm font-display transition-all"
                   >
-                    <ChevronLeft className="w-4 h-4" /> Back to Date & Time
+                    <ChevronLeft className="w-3.5 h-3.5 md:w-4 md:h-4" /> Back
                   </button>
                   <button
                     type="submit"
-                    className="flex items-center gap-2 bg-amber-500 text-black px-8 py-3 rounded-full font-display font-bold text-sm tracking-wide hover:bg-amber-400 transition-all shadow-lg shadow-amber-500/20"
+                    className="flex items-center gap-2 bg-amber-500 text-black px-5 md:px-8 py-2.5 md:py-3 rounded-full font-display font-bold text-xs md:text-sm tracking-wide hover:bg-amber-400 transition-all shadow-lg shadow-amber-500/20"
                   >
-                    <CreditCard className="w-4 h-4" /> Confirm & Book Chair
+                    <CreditCard className="w-3.5 h-3.5 md:w-4 md:h-4" /> Book Chair
                   </button>
                 </div>
               </form>
@@ -694,18 +703,18 @@ export default function BookingSystem({
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="text-center py-6 space-y-6"
+              className="text-center py-4 md:py-6 space-y-5 md:space-y-6"
             >
-              <div className="w-16 h-16 bg-amber-500/10 text-amber-500 rounded-full flex items-center justify-center mx-auto border border-amber-500/20">
-                <Check className="w-8 h-8 stroke-[3]" />
+              <div className="w-14 h-14 md:w-16 md:h-16 bg-amber-500/10 text-amber-500 rounded-full flex items-center justify-center mx-auto border border-amber-500/20">
+                <Check className="w-7 h-7 md:w-8 md:h-8 stroke-[3]" />
               </div>
 
               <div>
-                <h2 className="text-3xl font-display font-bold text-white mb-2">
-                  BARBARIQ CHAIR COPTED!
+                <h2 className="text-2xl md:text-3xl font-display font-bold text-white mb-1">
+                  CHAIR CONFIRMED!
                 </h2>
-                <p className="text-sm text-zinc-400 max-w-md mx-auto">
-                  Your seat has been reserved. Below is your official Barbariq Digital Pass. We have also sent a confirmation slip over to your phone.
+                <p className="text-xs md:text-sm text-zinc-400 max-w-md mx-auto">
+                  Your seat is reserved. Digital pass below — confirmation also sent via SMS.
                 </p>
               </div>
 
@@ -713,82 +722,80 @@ export default function BookingSystem({
               {appointments[0] && (
                 <div className="max-w-md mx-auto bg-amber-500 text-black rounded-3xl overflow-hidden shadow-2xl relative border border-amber-400 glow-gold text-left">
                   {/* Outer punched circles for ticket look */}
-                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-8 bg-zinc-900 rounded-r-full" />
-                  <div className="absolute right-0 top-1/2 -translate-y-1/2 w-4 h-8 bg-zinc-900 rounded-l-full" />
+                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-3 h-6 md:w-4 md:h-8 bg-zinc-900 rounded-r-full" />
+                  <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-6 md:w-4 md:h-8 bg-zinc-900 rounded-l-full" />
 
-                  <div className="p-6 border-b-2 border-dashed border-amber-600/40">
+                  <div className="p-4 md:p-6 border-b-2 border-dashed border-amber-600/40">
                     <div className="flex justify-between items-center">
                       <div className="flex items-center gap-2">
-                        <img src={logoBlackImg} alt="BARBARIQ" className="w-8 h-8 object-contain rounded" referrerPolicy="no-referrer" />
-                        <span className="font-display font-black text-xl tracking-wider">BARBARIQ</span>
+                        <img src={logoBlackImg} alt="BARBARIQ" className="w-7 h-7 md:w-8 md:h-8 object-contain rounded" referrerPolicy="no-referrer" />
+                        <span className="font-display font-black text-lg md:text-xl tracking-wider">BARBARIQ</span>
                       </div>
-                      <span className="text-[10px] font-mono tracking-widest border border-black/30 px-2 py-0.5 rounded font-semibold uppercase">
+                      <span className="text-[9px] md:text-[10px] font-mono tracking-widest border border-black/30 px-1.5 md:px-2 py-0.5 rounded font-semibold uppercase">
                         CHAIR PASS
                       </span>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4 mt-6">
+                    <div className="grid grid-cols-2 gap-3 md:gap-4 mt-4 md:mt-6">
                       <div>
-                        <span className="text-[9px] font-mono tracking-wider text-amber-950 uppercase block">Client Name</span>
-                        <span className="font-display font-bold text-base leading-tight block">{appointments[0].userName}</span>
+                        <span className="text-[8px] md:text-[9px] font-mono tracking-wider text-amber-950 uppercase block">Client</span>
+                        <span className="font-display font-bold text-sm md:text-base leading-tight block">{appointments[0].userName}</span>
                       </div>
                       <div>
-                        <span className="text-[9px] font-mono tracking-wider text-amber-950 uppercase block">Secret Booking ID</span>
-                        <span className="font-mono font-bold text-base block">{appointments[0].id}</span>
+                        <span className="text-[8px] md:text-[9px] font-mono tracking-wider text-amber-950 uppercase block">Booking ID</span>
+                        <span className="font-mono font-bold text-sm md:text-base block">{appointments[0].id}</span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="p-6 space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
+                  <div className="p-4 md:p-6 space-y-3 md:space-y-4">
+                    <div className="grid grid-cols-2 gap-3 md:gap-4">
                       <div>
-                        <span className="text-[9px] font-mono tracking-wider text-amber-950 uppercase block">Designated Service</span>
-                        <span className="font-display font-medium text-sm leading-tight block">{appointments[0].serviceName}</span>
+                        <span className="text-[8px] md:text-[9px] font-mono tracking-wider text-amber-950 uppercase block">Service</span>
+                        <span className="font-display font-medium text-xs md:text-sm leading-tight block">{appointments[0].serviceName}</span>
                       </div>
                       <div>
-                        <span className="text-[9px] font-mono tracking-wider text-amber-950 uppercase block">Barber</span>
-                        <span className="font-display font-bold text-sm block">Owner</span>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <span className="text-[9px] font-mono tracking-wider text-amber-950 uppercase block">Scheduled Time</span>
-                        <span className="font-mono font-bold text-sm block">{appointments[0].date} @ {appointments[0].timeSlot}</span>
-                      </div>
-                      <div>
-                        <span className="text-[9px] font-mono tracking-wider text-amber-950 uppercase block">Lounge Branch</span>
-                        <span className="font-display font-bold text-sm block">
-                          Juja Lounge
-                        </span>
+                        <span className="text-[8px] md:text-[9px] font-mono tracking-wider text-amber-950 uppercase block">Barber</span>
+                        <span className="font-display font-bold text-xs md:text-sm block">Owner</span>
                       </div>
                     </div>
 
-                    <div className="pt-4 border-t border-amber-600/20 flex justify-between items-center">
+                    <div className="grid grid-cols-2 gap-3 md:gap-4">
                       <div>
-                        <span className="text-[9px] font-mono tracking-wider text-amber-950 uppercase block">Payment method</span>
-                        <span className="font-display text-xs font-bold block">Pay KES at Counter</span>
+                        <span className="text-[8px] md:text-[9px] font-mono tracking-wider text-amber-950 uppercase block">Date & Time</span>
+                        <span className="font-mono font-bold text-xs md:text-sm block">{appointments[0].date} @ {appointments[0].timeSlot}</span>
+                      </div>
+                      <div>
+                        <span className="text-[8px] md:text-[9px] font-mono tracking-wider text-amber-950 uppercase block">Lounge</span>
+                        <span className="font-display font-bold text-xs md:text-sm block">Juja</span>
+                      </div>
+                    </div>
+
+                    <div className="pt-3 md:pt-4 border-t border-amber-600/20 flex justify-between items-center">
+                      <div>
+                        <span className="text-[8px] md:text-[9px] font-mono tracking-wider text-amber-950 uppercase block">Payment</span>
+                        <span className="font-display text-[10px] md:text-xs font-bold block">Pay at Counter</span>
                       </div>
                       <div className="text-right">
-                        <span className="text-[9px] font-mono tracking-wider text-amber-950 uppercase block">Rate KES</span>
-                        <span className="font-mono font-black text-xl">KES {appointments[0].price.toLocaleString()}</span>
+                        <span className="text-[8px] md:text-[9px] font-mono tracking-wider text-amber-950 uppercase block">Rate</span>
+                        <span className="font-mono font-black text-lg md:text-xl">KES {appointments[0].price.toLocaleString()}</span>
                       </div>
                     </div>
                   </div>
                 </div>
               )}
 
-              <div className="flex justify-center gap-4 pt-4">
+              <div className="flex justify-center gap-3 md:gap-4 pt-2 md:pt-4">
                 <button
                   onClick={resetFlow}
-                  className="px-6 py-2.5 rounded-full border border-zinc-800 text-zinc-300 hover:text-white hover:bg-zinc-800 text-sm font-display transition-all"
+                  className="px-4 md:px-6 py-2 md:py-2.5 rounded-full border border-zinc-800 text-zinc-300 hover:text-white hover:bg-zinc-800 text-xs md:text-sm font-display transition-all"
                 >
                   Book New Session
                 </button>
                 {appointments[0] && (
                   <button
                     onClick={() => handleDownloadReceipt(appointments[0])}
-                    className="px-6 py-2.5 rounded-full bg-amber-500 text-black hover:bg-amber-400 text-sm font-display font-bold transition-all shadow-md shadow-amber-500/10 flex items-center gap-2"
+                    className="px-4 md:px-6 py-2 md:py-2.5 rounded-full bg-amber-500 text-black hover:bg-amber-400 text-xs md:text-sm font-display font-bold transition-all shadow-md shadow-amber-500/10 flex items-center gap-2"
                   >
                     Download Receipt
                   </button>
@@ -800,55 +807,53 @@ export default function BookingSystem({
       </div>
 
       {/* RIGHT COLUMN: ACTIVE RESERVATIONS SHELF */}
-      <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 flex flex-col justify-between">
-        <div className="space-y-6">
-          <div className="flex items-center gap-2 pb-3 border-b border-zinc-800">
-            <Calendar className="w-5 h-5 text-amber-400" />
-            <h3 className="font-display font-medium text-lg text-white">
-              Your Reserved Chairs
+      <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 md:p-6 flex flex-col justify-between">
+        <div className="space-y-4 md:space-y-6">
+          <div className="flex items-center gap-2 pb-2 md:pb-3 border-b border-zinc-800">
+            <Calendar className="w-4 h-4 md:w-5 md:h-5 text-amber-400" />
+            <h3 className="font-display font-medium text-base md:text-lg text-white">
+              Your Bookings
             </h3>
-            <span className="ml-auto text-xs font-mono font-bold bg-zinc-800 text-amber-400 px-2.5 py-0.5 rounded-full">
-              {currentBookings.length} Active
+            <span className="ml-auto text-[10px] md:text-xs font-mono font-bold bg-zinc-800 text-amber-400 px-2 md:px-2.5 py-0.5 rounded-full">
+              {currentBookings.length}
             </span>
           </div>
 
           {currentBookings.length === 0 ? (
-            <div className="text-center py-12 text-zinc-500 space-y-3">
-              <Scissors className="w-8 h-8 text-zinc-700 mx-auto" />
-              <p className="text-sm max-w-[200px] mx-auto">
-                No active bookings recorded on this browser. Select a cut to book now!
+            <div className="text-center py-8 md:py-12 text-zinc-500 space-y-2 md:space-y-3">
+              <Scissors className="w-7 h-7 md:w-8 md:h-8 text-zinc-700 mx-auto" />
+              <p className="text-xs md:text-sm max-w-[200px] mx-auto">
+                No active bookings. Select a cut to book now!
               </p>
             </div>
           ) : (
-            <div className="space-y-4 max-h-[460px] overflow-y-auto pr-2">
+            <div className="space-y-3 md:space-y-4 max-h-[460px] overflow-y-auto pr-1 md:pr-2">
               {currentBookings.map((b) => (
                 <div 
                   key={b.id}
-                  className="bg-zinc-950/60 border border-zinc-800 rounded-xl p-4 space-y-3 hover:border-zinc-700 transition-all relative group"
+                  className="bg-zinc-950/60 border border-zinc-800 rounded-xl p-3 md:p-4 space-y-2 md:space-y-3 hover:border-zinc-700 transition-all relative group"
                 >
-
-
-                  <div className="space-y-1">
-                    <span className="text-[10px] font-mono text-amber-500 uppercase tracking-widest block">
+                  <div className="space-y-0.5">
+                    <span className="text-[9px] md:text-[10px] font-mono text-amber-500 uppercase tracking-widest block">
                       {b.id} • CONFIRMED
                     </span>
-                    <h4 className="font-display font-semibold text-white text-sm">
+                    <h4 className="font-display font-semibold text-white text-xs md:text-sm">
                       {b.serviceName}
                     </h4>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2 text-xs text-zinc-400 pt-1">
-                    <div className="flex items-center gap-1.5">
-                      <User className="w-3.5 h-3.5 text-zinc-500" />
+                  <div className="grid grid-cols-2 gap-1.5 md:gap-2 text-[10px] md:text-xs text-zinc-400 pt-0.5 md:pt-1">
+                    <div className="flex items-center gap-1 md:gap-1.5">
+                      <User className="w-3 h-3 md:w-3.5 md:h-3.5 text-zinc-500" />
                       <span className="truncate">Owner</span>
                     </div>
-                    <div className="flex items-center gap-1.5">
-                      <Clock className="w-3.5 h-3.5 text-zinc-500" />
+                    <div className="flex items-center gap-1 md:gap-1.5">
+                      <Clock className="w-3 h-3 md:w-3.5 md:h-3.5 text-zinc-500" />
                       <span className="font-mono">{b.timeSlot}</span>
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between pt-2.5 border-t border-zinc-800/60 text-xs">
+                  <div className="flex items-center justify-between pt-2 md:pt-2.5 border-t border-zinc-800/60 text-[10px] md:text-xs">
                     <span className="font-mono text-zinc-400">{b.date}</span>
                     <span className="font-mono font-medium text-amber-400">
                       KES {b.price.toLocaleString()}
@@ -860,9 +865,9 @@ export default function BookingSystem({
           )}
         </div>
 
-        <div className="pt-6 border-t border-zinc-800 mt-6 md:mt-0">
-          <div className="flex gap-3 items-center text-xs text-zinc-500">
-            <MapPin className="w-4 h-4 text-amber-500 shrink-0" />
+        <div className="pt-4 md:pt-6 border-t border-zinc-800 mt-4 md:mt-0">
+          <div className="flex gap-2 md:gap-3 items-center text-[10px] md:text-xs text-zinc-500">
+            <MapPin className="w-3.5 h-3.5 md:w-4 md:h-4 text-amber-500 shrink-0" />
             <p>
               <strong>Location:</strong> Along Thika Road, Juja.
             </p>

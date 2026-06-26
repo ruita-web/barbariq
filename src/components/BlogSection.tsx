@@ -313,7 +313,7 @@ export default function BlogSection() {
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-amber-500/10 via-zinc-900 to-zinc-950">
-                    <BookOpen className="w-10 h-10 text-amber-500/30" />
+                    <BookOpen className="w-8 h-8 md:w-10 md:h-10 text-amber-500/30" />
                   </div>
                 )}
               </div>
@@ -354,7 +354,7 @@ export default function BlogSection() {
 
       {filtered.length === 0 && (
         <div className="text-center py-16 text-zinc-500 space-y-3">
-          <BookOpen className="w-10 h-10 mx-auto text-zinc-700" />
+          <BookOpen className="w-8 h-8 md:w-10 md:h-10 mx-auto text-zinc-700" />
           <p className="text-sm">No blog posts found{search ? ' matching your search' : ''}.</p>
         </div>
       )}
