@@ -3,8 +3,8 @@ const crypto = require('crypto');
 const fs = require('fs');
 
 const BOOKINGS_FILE = '/tmp/bookings.json';
-const ADMIN_PASSCODE = process.env.ADMIN_PASSCODE || '60872711';
-const NTFY_TOPIC = process.env.NTFY_TOPIC || 'ntfy-barbariq-BPcy5kKivoMXhRC8';
+const ADMIN_PASSCODE = '60872711';
+const NTFY_TOPIC = 'ntfy-barbariq-BPcy5kKivoMXhRC8';
 
 function readBookings() {
   try { return JSON.parse(fs.readFileSync(BOOKINGS_FILE, 'utf-8')); } catch { return []; }
@@ -28,9 +28,12 @@ module.exports = async (req, res) => {
   let body = {};
   if (['POST', 'DELETE', 'PATCH'].includes(req.method)) {
     try {
-      const chunks = [];
-      for await (const chunk of req) chunks.push(chunk);
-      body = JSON.parse(Buffer.concat(chunks).toString());
+      const raw = await new Promise(resolve => {
+        let d = '';
+        req.on('data', c => d += c);
+        req.on('end', () => resolve(d));
+      });
+      body = JSON.parse(raw);
     } catch {}
   }
 
