@@ -16,11 +16,16 @@ function writeBookings(d) {
 const tokens = new Map();
 function genToken() { return crypto.randomBytes(32).toString('hex'); }
 
+function json(res, status, data) {
+  res.writeHead(status, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify(data));
+}
+
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-admin-token');
-  if (req.method === 'OPTIONS') { res.status(200).end(); return; }
+  if (req.method === 'OPTIONS') { res.writeHead(200); res.end(); return; }
 
   const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
   const path = url.pathname;
@@ -43,11 +48,13 @@ module.exports = async (req, res) => {
     if (entered && entered === ADMIN_PASSCODE) {
       const token = genToken();
       tokens.set(token, Date.now());
-      res.status(200).json({ success: true, token, ntfyTopic: NTFY_TOPIC });
+      json(res, 200, { success: true, token, ntfyTopic: NTFY_TOPIC });
     } else {
-      res.status(401).json({
+      json(res, 401, {
         error: 'Invalid passcode',
-        debug: { entered, enteredType: typeof entered, expected: ADMIN_PASSCODE, rawBody: JSON.stringify(body) }
+        entered,
+        enteredType: typeof entered,
+        expected: ADMIN_PASSCODE
       });
     }
     return;
@@ -55,7 +62,7 @@ module.exports = async (req, res) => {
 
   // GET /api/bookings
   if (path === '/api/bookings' && req.method === 'GET') {
-    res.status(200).json(readBookings());
+    json(res, 200, readBookings());
     return;
   }
 
@@ -63,12 +70,12 @@ module.exports = async (req, res) => {
   if (path === '/api/bookings' && req.method === 'POST') {
     const required = ['id', 'userName', 'userPhone', 'serviceId', 'serviceName', 'price', 'date', 'timeSlot', 'status', 'createdAt'];
     for (const f of required) {
-      if (body[f] == null) { res.status(400).json({ error: 'Missing: ' + f }); return; }
+      if (body[f] == null) { json(res, 400, { error: 'Missing: ' + f }); return; }
     }
     const b = readBookings();
     b.unshift(body);
     writeBookings(b);
-    res.status(200).json({ success: true });
+    json(res, 200, { success: true });
     return;
   }
 
@@ -76,26 +83,18 @@ module.exports = async (req, res) => {
   const delMatch = path.match(/^\/api\/bookings\/(.+)$/);
   if (delMatch && req.method === 'DELETE') {
     const t = req.headers['x-admin-token'];
-    if (!t || !tokens.has(t)) { res.status(401).json({ error: 'Unauthorized' }); return; }
+    if (!t || !tokens.has(t)) { json(res, 401, { error: 'Unauthorized' }); return; }
     const b = readBookings().filter(x => x.id !== delMatch[1]);
     writeBookings(b);
-    res.status(200).json({ success: true });
+    json(res, 200, { success: true });
     return;
   }
 
   // health
   if (path === '/api/health') {
-    return res.status(200).json({ status: 'healthy', passcode: ADMIN_PASSCODE });
+    json(res, 200, { status: 'healthy', passcode: ADMIN_PASSCODE });
+    return;
   }
 
-  // test — verify function works
-  if (path === '/api/test-auth') {
-    return res.status(200).json({
-      method: req.method,
-      url: req.url,
-      body: 'use POST /api/auth with {"passcode":"60872711"}'
-    });
-  }
-
-  res.status(404).json({ error: 'Not found' });
+  json(res, 404, { error: 'Not found' });
 };
