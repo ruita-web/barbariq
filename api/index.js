@@ -1,8 +1,6 @@
-/* Vercel serverless function */
-const express = require('express');
+/* Vercel serverless function — zero dependencies, no Express */
 const crypto = require('crypto');
 const fs = require('fs');
-const path = require('path');
 
 const BOOKINGS_FILE = '/tmp/bookings.json';
 const ADMIN_PASSCODE = process.env.ADMIN_PASSCODE || '60872711';
@@ -18,38 +16,72 @@ function writeBookings(d) {
 const tokens = new Map();
 function genToken() { return crypto.randomBytes(32).toString('hex'); }
 
-const app = express();
-app.use(express.json());
+module.exports = async (req, res) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-admin-token');
+  if (req.method === 'OPTIONS') { res.status(200).end(); return; }
 
-app.post('/api/auth', (req, res) => {
-  const { passcode } = req.body || {};
-  if (!passcode || passcode !== ADMIN_PASSCODE) {
-    console.log('Auth failed: entered="' + passcode + '", expected="' + ADMIN_PASSCODE + '"');
-    return res.status(401).json({ error: 'Invalid passcode' });
+  const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
+  const path = url.pathname;
+
+  let body = {};
+  if (['POST', 'DELETE', 'PATCH'].includes(req.method)) {
+    try {
+      const chunks = [];
+      for await (const chunk of req) chunks.push(chunk);
+      body = JSON.parse(Buffer.concat(chunks).toString());
+    } catch {}
   }
-  const token = genToken();
-  tokens.set(token, Date.now());
-  res.json({ success: true, token, ntfyTopic: NTFY_TOPIC });
-});
 
-app.get('/api/bookings', (req, res) => res.json(readBookings()));
+  // POST /api/auth — admin login
+  if (path === '/api/auth' && req.method === 'POST') {
+    const entered = body.passcode;
+    if (entered && entered === ADMIN_PASSCODE) {
+      const token = genToken();
+      tokens.set(token, Date.now());
+      res.status(200).json({ success: true, token, ntfyTopic: NTFY_TOPIC });
+    } else {
+      res.status(401).json({ error: 'Invalid passcode' });
+    }
+    return;
+  }
 
-app.post('/api/bookings', (req, res) => {
-  const body = req.body || {};
-  const required = ['id', 'userName', 'userPhone', 'serviceId', 'serviceName', 'price', 'date', 'timeSlot', 'status', 'createdAt'];
-  for (const f of required) { if (body[f] == null) return res.status(400).json({ error: 'Missing: ' + f }); }
-  const b = readBookings();
-  b.unshift(body);
-  writeBookings(b);
-  res.json({ success: true });
-});
+  // GET /api/bookings
+  if (path === '/api/bookings' && req.method === 'GET') {
+    res.status(200).json(readBookings());
+    return;
+  }
 
-app.delete('/api/bookings/:id', (req, res) => {
-  const t = req.headers['x-admin-token'];
-  if (!t || !tokens.has(t)) return res.status(401).json({ error: 'Unauthorized' });
-  const b = readBookings().filter(x => x.id !== req.params.id);
-  writeBookings(b);
-  res.json({ success: true });
-});
+  // POST /api/bookings — create booking
+  if (path === '/api/bookings' && req.method === 'POST') {
+    const required = ['id', 'userName', 'userPhone', 'serviceId', 'serviceName', 'price', 'date', 'timeSlot', 'status', 'createdAt'];
+    for (const f of required) {
+      if (body[f] == null) { res.status(400).json({ error: 'Missing: ' + f }); return; }
+    }
+    const b = readBookings();
+    b.unshift(body);
+    writeBookings(b);
+    res.status(200).json({ success: true });
+    return;
+  }
 
-module.exports = app;
+  // DELETE /api/bookings/:id
+  const delMatch = path.match(/^\/api\/bookings\/(.+)$/);
+  if (delMatch && req.method === 'DELETE') {
+    const t = req.headers['x-admin-token'];
+    if (!t || !tokens.has(t)) { res.status(401).json({ error: 'Unauthorized' }); return; }
+    const b = readBookings().filter(x => x.id !== delMatch[1]);
+    writeBookings(b);
+    res.status(200).json({ success: true });
+    return;
+  }
+
+  // health
+  if (path === '/api/health') {
+    res.status(200).json({ status: 'healthy' });
+    return;
+  }
+
+  res.status(404).json({ error: 'Not found' });
+};
