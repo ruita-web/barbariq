@@ -1,18 +1,19 @@
-const crypto = require('crypto');
-const fs = require('fs');
+import { createHash, randomBytes } from 'crypto';
+import { readFileSync, writeFileSync } from 'fs';
+
 const BOOKINGS_FILE = '/tmp/bookings.json';
 const ADMIN_PASSCODE = '60872711';
 const NTFY_TOPIC = 'ntfy-barbariq-BPcy5kKivoMXhRC8';
 
 function readBookings() {
-  try { return JSON.parse(fs.readFileSync(BOOKINGS_FILE, 'utf-8')); } catch { return []; }
+  try { return JSON.parse(readFileSync(BOOKINGS_FILE, 'utf-8')); } catch { return []; }
 }
 function writeBookings(d) {
-  fs.writeFileSync(BOOKINGS_FILE, JSON.stringify(d, null, 2), 'utf-8');
+  writeFileSync(BOOKINGS_FILE, JSON.stringify(d, null, 2), 'utf-8');
 }
 
 const tokens = new Map();
-function genToken() { return crypto.randomBytes(32).toString('hex'); }
+function genToken() { return randomBytes(32).toString('hex'); }
 
 function json(res, code, data) {
   res.statusCode = code;
@@ -20,11 +21,11 @@ function json(res, code, data) {
   res.end(JSON.stringify(data));
 }
 
-module.exports = (req, res) => {
+export default function handler(req, res) {
   const url = new URL(req.url, 'http://localhost');
   const path = url.pathname;
 
-  if (path === '/api/health') return json(res, 200, { ok: true });
+  if (path === '/api/health') return json(res, 200, { ok: true, passcode: ADMIN_PASSCODE });
 
   if (path === '/api/auth' && req.method === 'POST') {
     let body = '';
