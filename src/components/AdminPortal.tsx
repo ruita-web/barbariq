@@ -43,7 +43,9 @@ interface AdminPortalProps {
 export default function AdminPortal({ services, onUpdateServices, onNavigateHome }: AdminPortalProps) {
   const [passcode, setPasscode] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [authError, setAuthError] = useState(false);
+  const [authError, setAuthError] = useState<string>('');
+  const [adminToken, setAdminToken] = useState<string | null>(null);
+  const [ntfyTopic, setNtfyTopic] = useState<string>('');
   const [activeSubTab, setActiveSubTab] = useState<'overview' | 'bookings' | 'pricing' | 'blog' | 'faqs' | 'system'>('overview');
   
   // Local state for bookings and pricing editor
@@ -149,8 +151,8 @@ export default function AdminPortal({ services, onUpdateServices, onNavigateHome
   useEffect(() => {
     if (!isAuthenticated) return;
     // SSE connection to ntfy.sh for real-time pushes
-    const ntfyTopic = import.meta.env.VITE_NTFY_TOPIC || 'barbariq-bookings';
-    const evtSource = new EventSource(`https://ntfy.sh/${ntfyTopic}/sse`);
+    const topic = ntfyTopic || 'barbariq-bookings';
+    const evtSource = new EventSource(`https://ntfy.sh/${topic}/sse`);
     evtSource.addEventListener('message', (e) => {
       try {
         const data = JSON.parse(e.data);
@@ -168,7 +170,7 @@ export default function AdminPortal({ services, onUpdateServices, onNavigateHome
     // Backup polling every 15s in case SSE misses
     const interval = setInterval(() => loadBookings(), 15000);
     return () => { evtSource.close(); clearInterval(interval); };
-  }, [isAuthenticated]);
+  }, [isAuthenticated, ntfyTopic]);
 
   // Load data on mount (no auto-auth — lock on refresh)
   useEffect(() => {
@@ -229,22 +231,39 @@ export default function AdminPortal({ services, onUpdateServices, onNavigateHome
 
   const handleClear = () => {
     setPasscode('');
-    setAuthError(false);
+    setAuthError('');
   };
 
-  const handleAuthSubmit = (e?: React.FormEvent) => {
+  const handleAuthSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    if (passcode === (import.meta.env.VITE_ADMIN_PASSCODE || '60872711')) {
-      setIsAuthenticated(true);
-      setPasscode('');
-    } else {
-      setAuthError(true);
+    try {
+      const res = await fetch('/api/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ passcode })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setAdminToken(data.token);
+        setNtfyTopic(data.ntfyTopic || '');
+        setIsAuthenticated(true);
+        setPasscode('');
+        setAuthError('');
+      } else {
+        const data = await res.json().catch(() => ({}));
+        setAuthError(data.error || 'Invalid passcode');
+        setPasscode('');
+      }
+    } catch {
+      setAuthError('Connection error. Is the server running?');
       setPasscode('');
     }
   };
 
   const handleLogout = () => {
     setIsAuthenticated(false);
+    setAdminToken(null);
+    setNtfyTopic('');
   };
 
   // Delete booking handler
@@ -253,8 +272,11 @@ export default function AdminPortal({ services, onUpdateServices, onNavigateHome
       const updated = bookings.filter(b => b.id !== id);
       setBookings(updated);
       localStorage.setItem('barbariq_bookings', JSON.stringify(updated));
-      // Sync delete to server
-      fetch(`/api/bookings/${id}`, { method: 'DELETE' }).catch(() => {});
+      // Sync delete to server with auth token
+      fetch(`/api/bookings/${id}`, {
+        method: 'DELETE',
+        headers: { 'x-admin-token': adminToken || '' }
+      }).catch(() => {});
     }
   };
 
@@ -472,8 +494,8 @@ export default function AdminPortal({ services, onUpdateServices, onNavigateHome
               {/* Pin feedback */}
               <div className="h-4">
                 {authError && (
-                  <p className="text-xs text-red-505 font-mono flex items-center justify-center gap-1.5 text-red-400">
-                    <ShieldAlert className="w-3.5 h-3.5" /> DECRYPTION FAILED. ACCESS DENIED.
+                  <p className="text-xs font-mono flex items-center justify-center gap-1.5 text-red-400">
+                    <ShieldAlert className="w-3.5 h-3.5" /> {authError}
                   </p>
                 )}
               </div>

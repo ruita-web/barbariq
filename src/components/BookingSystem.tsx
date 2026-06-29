@@ -193,13 +193,11 @@ export default function BookingSystem({
     } catch (_) {}
 
     // POST to server for cross-device sync
-    try {
-      fetch('/api/bookings', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newBooking)
-      });
-    } catch (_) {}
+    fetch('/api/bookings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newBooking)
+    }).catch(() => {});
 
     // Alert sound + browser notification
     sendNotification(newBooking);
