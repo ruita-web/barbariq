@@ -45,7 +45,10 @@ module.exports = async (req, res) => {
       tokens.set(token, Date.now());
       res.status(200).json({ success: true, token, ntfyTopic: NTFY_TOPIC });
     } else {
-      res.status(401).json({ error: 'Invalid passcode' });
+      res.status(401).json({
+        error: 'Invalid passcode',
+        debug: { entered, enteredType: typeof entered, expected: ADMIN_PASSCODE, rawBody: JSON.stringify(body) }
+      });
     }
     return;
   }
@@ -82,8 +85,16 @@ module.exports = async (req, res) => {
 
   // health
   if (path === '/api/health') {
-    res.status(200).json({ status: 'healthy' });
-    return;
+    return res.status(200).json({ status: 'healthy', passcode: ADMIN_PASSCODE });
+  }
+
+  // test — verify function works
+  if (path === '/api/test-auth') {
+    return res.status(200).json({
+      method: req.method,
+      url: req.url,
+      body: 'use POST /api/auth with {"passcode":"60872711"}'
+    });
   }
 
   res.status(404).json({ error: 'Not found' });
