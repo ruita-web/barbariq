@@ -1,49 +1,56 @@
-import { createHash, randomBytes } from 'crypto';
-import { readFileSync, writeFileSync } from 'fs';
+const express = require('express');
+const crypto = require('crypto');
+const fs = require('fs');
 
 const BOOKINGS_FILE = '/tmp/bookings.json';
 const ADMIN_PASSCODE = '60872711';
 const NTFY_TOPIC = 'ntfy-barbariq-BPcy5kKivoMXhRC8';
 
 function readBookings() {
-  try { return JSON.parse(readFileSync(BOOKINGS_FILE, 'utf-8')); } catch { return []; }
+  try { return JSON.parse(fs.readFileSync(BOOKINGS_FILE, 'utf-8')); } catch { return []; }
 }
 function writeBookings(d) {
-  writeFileSync(BOOKINGS_FILE, JSON.stringify(d, null, 2), 'utf-8');
+  fs.writeFileSync(BOOKINGS_FILE, JSON.stringify(d, null, 2), 'utf-8');
 }
 
 const tokens = new Map();
-function genToken() { return randomBytes(32).toString('hex'); }
+function genToken() { return crypto.randomBytes(32).toString('hex'); }
 
-function json(res, code, data) {
-  res.statusCode = code;
-  res.setHeader('Content-Type', 'application/json');
-  res.end(JSON.stringify(data));
-}
+const app = express();
+app.use(express.json());
 
-export default function handler(req, res) {
-  const url = new URL(req.url, 'http://localhost');
-  const path = url.pathname;
+app.get('/api/health', (req, res) => res.json({ ok: true, passcode: ADMIN_PASSCODE }));
 
-  if (path === '/api/health') return json(res, 200, { ok: true, passcode: ADMIN_PASSCODE });
-
-  if (path === '/api/auth' && req.method === 'POST') {
-    let body = '';
-    req.on('data', c => body += c);
-    req.on('end', () => {
-      try {
-        const { passcode } = JSON.parse(body);
-        if (passcode === ADMIN_PASSCODE) {
-          const token = genToken();
-          tokens.set(token, Date.now());
-          json(res, 200, { success: true, token, ntfyTopic: NTFY_TOPIC });
-        } else {
-          json(res, 401, { error: 'Invalid passcode' });
-        }
-      } catch { json(res, 400, { error: 'Bad request' }); }
-    });
-    return;
+app.post('/api/auth', (req, res) => {
+  const { passcode } = req.body || {};
+  if (passcode === ADMIN_PASSCODE) {
+    const token = genToken();
+    tokens.set(token, Date.now());
+    res.json({ success: true, token, ntfyTopic: NTFY_TOPIC });
+  } else {
+    res.status(401).json({ error: 'Invalid passcode', entered: passcode, expected: ADMIN_PASSCODE });
   }
+});
 
-  json(res, 404, { error: 'Not found' });
-};
+app.get('/api/bookings', (req, res) => res.json(readBookings()));
+
+app.post('/api/bookings', (req, res) => {
+  const required = ['id', 'userName', 'userPhone', 'serviceId', 'serviceName', 'price', 'date', 'timeSlot', 'status', 'createdAt'];
+  for (const f of required) {
+    if (req.body[f] == null) return res.status(400).json({ error: 'Missing: ' + f });
+  }
+  const b = readBookings();
+  b.unshift(req.body);
+  writeBookings(b);
+  res.json({ success: true });
+});
+
+app.delete('/api/bookings/:id', (req, res) => {
+  const t = req.headers['x-admin-token'];
+  if (!t || !tokens.has(t)) return res.status(401).json({ error: 'Unauthorized' });
+  const b = readBookings().filter(x => x.id !== req.params.id);
+  writeBookings(b);
+  res.json({ success: true });
+});
+
+module.exports = app;
